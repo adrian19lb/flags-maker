@@ -30,8 +30,9 @@ class IncludedFilenamesGenerator(FilenamesGenerator):
 
     def __process(self, line, filename): 
         if self.keyword in line:
+            root_dir = os.path.dirname(filename)
             trimed_filename = self.__cut_redundant_chars(line)
-            dependent_abs_path = self.__join_paths(trimed_filename) 
+            dependent_abs_path = self.__join_paths(root_dir, trimed_filename) 
             self.file_dependency_mapper[filename].append(dependent_abs_path)
             self.__search(dependent_abs_path)
 
@@ -40,12 +41,10 @@ class IncludedFilenamesGenerator(FilenamesGenerator):
         
         return angled_or_quated_filename[1:-1]
 
-    def __join_paths(self, filename):
-        root_dir = os.path.dirname(filename)
+    def __join_paths(self, root_dir, filename):
         normalize_redundant_path = os.path.normpath(filename)
-        abs_path = os.path.join(root_dir, normalize_redundant_path)
-
-        return abs_path
+        
+        return os.path.join(root_dir, normalize_redundant_path)
 
     def __fill_dependent_file_list(self, filename, dependent_file_list):
         for file in self.file_dependency_mapper[filename]:
