@@ -29,7 +29,12 @@ class IncludedFilenamesGenerator(FilenamesGenerator):
             if self.keyword in line:
                 angled_or_quated_filename = line.split()[-1]
                 trimed_filename = angled_or_quated_filename[1:-1]
-                self.file_dependency_mapper[filename].append(trimed_filename)
+
+                normalize_redundant_path = os.path.normpath(trimed_filename)
+                root_dir = os.path.dirname(filename)
+                dependent_abs_path = os.path.join(root_dir, normalize_redundant_path)
+
+                self.file_dependency_mapper[filename].append(dependent_abs_path)
                 self.__search(trimed_filename)
 
     def __fill_dependent_file_list(self, filename, dependent_file_list):
