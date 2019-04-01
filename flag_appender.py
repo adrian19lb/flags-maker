@@ -20,22 +20,32 @@ class IncludedFilenamesGenerator(FilenamesGenerator):
     def __search(self, filename):
         try:
             with open(filename, 'r') as file_buffer:
-                self.__fill_file_dependency_mapper(file_buffer, filename)
+                self.__try_fil_dependency_mapper(file_buffer, filename)
         except FileNotFoundError:
             pass
     
-    def __fill_file_dependency_mapper(self, file_buffer, filename):
+    def __try_fil_dependency_mapper(self, file_buffer, filename):
         for line in file_buffer:
-            if self.keyword in line:
-                angled_or_quated_filename = line.split()[-1]
-                trimed_filename = angled_or_quated_filename[1:-1]
+            self.__process(line, filename)
 
-                normalize_redundant_path = os.path.normpath(trimed_filename)
-                root_dir = os.path.dirname(filename)
-                dependent_abs_path = os.path.join(root_dir, normalize_redundant_path)
+    def __process(self, line, filename): 
+        if self.keyword in line:
+            trimed_filename = self.__cut_redundant_chars(line)
+            dependent_abs_path = self.__join_paths(trimed_filename) 
+            self.file_dependency_mapper[filename].append(dependent_abs_path)
+            self.__search(dependent_abs_path)
 
-                self.file_dependency_mapper[filename].append(dependent_abs_path)
-                self.__search(trimed_filename)
+    def __cut_redundant_chars(self, line): 
+        angled_or_quated_filename = line.split()[-1]
+        
+        return angled_or_quated_filename[1:-1]
+
+    def __join_paths(self, filename):
+        root_dir = os.path.dirname(filename)
+        normalize_redundant_path = os.path.normpath(filename)
+        abs_path = os.path.join(root_dir, normalize_redundant_path)
+
+        return abs_path
 
     def __fill_dependent_file_list(self, filename, dependent_file_list):
         for file in self.file_dependency_mapper[filename]:
